@@ -26,16 +26,16 @@ class CandidateDelegateReport(utils.UnicodeMixin):
     'd30': 10
     """
     def __init__(self, **kwargs):
-        self.level = kwargs.get('level', None)
-        self.party_total = kwargs.get('party_total', None)
-        self.superdelegates_count = kwargs.get('superdelegates_count', None)
-        self.last = kwargs.get('last', None)
-        self.state = kwargs.get('state', None)
-        self.candidateid = kwargs.get('candidateid', None)
-        self.party_need = kwargs.get('party_need', None)
-        self.party = kwargs.get('party', None)
-        self.delegates_count = kwargs.get('delegates_count', None)
-        self.id = "%s-%s" % (self.state, self.candidateid)
+        self.level = kwargs.get('level')
+        self.party_total = kwargs.get('party_total')
+        self.superdelegates_count = kwargs.get('superdelegates_count')
+        self.last = kwargs.get('last')
+        self.state = kwargs.get('state')
+        self.candidateid = kwargs.get('candidateid')
+        self.party_need = kwargs.get('party_need')
+        self.party = kwargs.get('party')
+        self.delegates_count = kwargs.get('delegates_count')
+        self.id = f"{self.state}-{self.candidateid}"
         self.d1 = int(kwargs.get('d1', None).replace(',', ''))
         self.d7 = int(kwargs.get('d7', None).replace(',', ''))
         self.d30 = int(kwargs.get('d30', None).replace(',', ''))
@@ -61,7 +61,7 @@ class CandidateDelegateReport(utils.UnicodeMixin):
         ))
 
     def __unicode__(self):
-        return "%s - %s" % (self.last, self.state)
+        return f"{self.last} - {self.state}"
 
 
 class DelegateReport(utils.UnicodeMixin):
@@ -109,11 +109,13 @@ class DelegateReport(utils.UnicodeMixin):
 
                     for candidate in party['Cand']:
                         try:
-                            if cd['candidateid']:
-                                if cd['candidateid'] == candidate['cId']:
-                                    cd['d1'] = candidate['d1']
-                                    cd['d7'] = candidate['d7']
-                                    cd['d30'] = candidate['d30']
+                            if (
+                                cd['candidateid']
+                                and cd['candidateid'] == candidate['cId']
+                            ):
+                                cd['d1'] = candidate['d1']
+                                cd['d7'] = candidate['d7']
+                                cd['d30'] = candidate['d30']
                         except TypeError:
                             pass
 
@@ -146,12 +148,10 @@ class DelegateReport(utils.UnicodeMixin):
                         'state': state['sId'],
                         'candidateid': candidate['cId'],
                         'last': candidate['cName'],
-                        'delegates_count': int(candidate['dTot'])
+                        'delegates_count': int(candidate['dTot']),
+                        'level': 'nation' if state['sId'] == 'US' else 'state',
                     }
-                    if state['sId'] == 'US':
-                        d['level'] = 'nation'
-                    else:
-                        d['level'] = 'state'
+
                     self.candidates[candidate['cId']][state['sId']].update(d)
 
     def load_raw_data(self, delsuper_datafile, delsum_datafile):
@@ -189,8 +189,7 @@ class DelegateReport(utils.UnicodeMixin):
         using requests. Formats that request with env vars.
         """
         reports = utils.get_reports(params=params)
-        report_id = self.get_report_id(reports, key)
-        if report_id:
+        if report_id := self.get_report_id(reports, key):
             r = utils.api_request('/reports/{0}'.format(report_id), **params)
             return r.json()[key]['del']
 
@@ -202,15 +201,17 @@ class DelegateReport(utils.UnicodeMixin):
         organization-specific report ID.
         """
 
-        for report in reports:
-            if (
-                key == 'delSum' and
-                report.get('title') == 'Delegates / delsum'
-            ) or (
-                key == 'delSuper' and
-                report.get('title') == 'Delegates / delsuper'
-            ):
-                id = report.get('id').rsplit('/', 1)[-1]
-                return id
-
-        return None
+        return next(
+            (
+                report.get('id').rsplit('/', 1)[-1]
+                for report in reports
+                if (
+                    key == 'delSum' and report.get('title') == 'Delegates / delsum'
+                )
+                or (
+                    key == 'delSuper'
+                    and report.get('title') == 'Delegates / delsuper'
+                )
+            ),
+            None,
+        )

@@ -122,18 +122,18 @@ class TestCandidateReportingUnit(tests.ElectionResultsTestCase):
         self.assertEqual(len(self.candidate_reporting_units), 505)
 
     def test_candidate_reporting_unit_sums_raceid(self):
-        candidate_reporting_units = self.candidate_reporting_units[0:2]
+        candidate_reporting_units = self.candidate_reporting_units[:2]
         for cru in candidate_reporting_units:
             self.assertEqual(cru.raceid, '7582')
 
     def test_candidate_reporting_unit_sums_level(self):
-        candidate_reporting_units = self.candidate_reporting_units[0:2]
+        candidate_reporting_units = self.candidate_reporting_units[:2]
         for cru in candidate_reporting_units:
             self.assertEqual(cru.level, 'state')
 
     def test_candidate_reporting_unit_sums_reportingunit_pct(self):
         reporting_unit = self.reporting_units[0]
-        candidate_reporting_units = self.candidate_reporting_units[0:2]
+        candidate_reporting_units = self.candidate_reporting_units[:2]
         self.assertEqual(
             (
                 candidate_reporting_units[0].votecount /
@@ -148,19 +148,21 @@ class TestCandidateReportingUnit(tests.ElectionResultsTestCase):
         self.assertEqual(reporting_unit.votecount, actual_sums_from_json)
 
     def test_candidate_reporting_unit_sums_to_candidatereportingunit(self):
-        candidate_reporting_units = self.candidate_reporting_units[0:2]
+        candidate_reporting_units = self.candidate_reporting_units[:2]
         actual_sums_from_json = 805617 + 354769
         sum_candidate_reporting_units = sum(
-            [v.votecount for v in candidate_reporting_units]
+            v.votecount for v in candidate_reporting_units
         )
+
         self.assertEqual(sum_candidate_reporting_units, actual_sums_from_json)
 
     def test_candidate_reporting_unit_sums_reportingunit(self):
         reporting_unit = self.reporting_units[0]
-        candidate_reporting_units = self.candidate_reporting_units[0:2]
+        candidate_reporting_units = self.candidate_reporting_units[:2]
         sum_candidate_reporting_units = sum(
-            [v.votecount for v in candidate_reporting_units]
+            v.votecount for v in candidate_reporting_units
         )
+
         self.assertEqual(
             sum_candidate_reporting_units,
             reporting_unit.votecount
@@ -259,6 +261,6 @@ class TestCandidateReportingUnit(tests.ElectionResultsTestCase):
         )
 
     def test_unique_ids(self):
-        all_ids = list([b.id for b in self.candidate_reporting_units])
+        all_ids = [b.id for b in self.candidate_reporting_units]
         unique_ids = set(all_ids)
         self.assertEqual(len(all_ids), len(unique_ids))

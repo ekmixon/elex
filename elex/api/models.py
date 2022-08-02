@@ -33,10 +33,10 @@ class APElection(utils.UnicodeMixin):
         """
         reportingunits_obj = []
 
-        for r in self.reportingunits:
+        # Don't obliterate good data with possibly empty fields.
+        SKIP_FIELDS = ['candidates', 'statepostal', 'statename']
 
-            # Don't obliterate good data with possibly empty fields.
-            SKIP_FIELDS = ['candidates', 'statepostal', 'statename']
+        for r in self.reportingunits:
 
             for k, v in self.__dict__.items():
                 if k not in SKIP_FIELDS:
@@ -63,17 +63,16 @@ class APElection(utils.UnicodeMixin):
         Per Tracy / AP developers, if the level is
         "state", the reportingunitid is always 1.
         """
-        if not self.reportingunitid:
-            if self.level == "state":
-                # Adds the statepostal to make these reportinunitids unique even for
-                # national elections. See #0278.
-                setattr(self, 'reportingunitid', 'state-%s-1' % self.statepostal)
-        else:
+        if self.reportingunitid:
             """
             Fixes #226 reportingunitids recycled across levels.
             """
-            setattr(self, 'reportingunitid', '%s-%s' % (
-                self.level, self.reportingunitid))
+            setattr(self, 'reportingunitid', f'{self.level}-{self.reportingunitid}')
+
+        elif self.level == "state":
+                # Adds the statepostal to make these reportinunitids unique even for
+                # national elections. See #0278.
+            setattr(self, 'reportingunitid', f'state-{self.statepostal}-1')
 
     def set_candidates(self):
         """
@@ -139,13 +138,13 @@ class Candidate(APElection):
         """
         self.id = None
         self.unique_id = None
-        self.ballotorder = kwargs.get('ballotorder', None)
-        self.candidateid = kwargs.get('candidateid', None)
-        self.first = kwargs.get('first', None)
-        self.last = kwargs.get('last', None)
-        self.party = kwargs.get('party', None)
-        self.polid = kwargs.get('polid', None)
-        self.polnum = kwargs.get('polnum', None)
+        self.ballotorder = kwargs.get('ballotorder')
+        self.candidateid = kwargs.get('candidateid')
+        self.first = kwargs.get('first')
+        self.last = kwargs.get('last')
+        self.party = kwargs.get('party')
+        self.polid = kwargs.get('polid')
+        self.polnum = kwargs.get('polnum')
 
         self.set_polid()
         self.set_unique_id()
@@ -221,14 +220,14 @@ class BallotMeasure(APElection):
         """
         self.id = None
         self.unique_id = None
-        self.ballotorder = kwargs.get('ballotorder', None)
-        self.candidateid = kwargs.get('candidateid', None)
-        self.description = kwargs.get('description', None)
-        self.electiondate = kwargs.get('electiondate', None)
-        self.last = kwargs.get('last', None)
-        self.polid = kwargs.get('polid', None)
-        self.polnum = kwargs.get('polnum', None)
-        self.seatname = kwargs.get('seatname', None)
+        self.ballotorder = kwargs.get('ballotorder')
+        self.candidateid = kwargs.get('candidateid')
+        self.description = kwargs.get('description')
+        self.electiondate = kwargs.get('electiondate')
+        self.last = kwargs.get('last')
+        self.polid = kwargs.get('polid')
+        self.polnum = kwargs.get('polnum')
+        self.seatname = kwargs.get('seatname')
 
         self.set_polid()
         self.set_unique_id()
@@ -262,7 +261,7 @@ class BallotMeasure(APElection):
         we're using and then the ID itself.
         Verified this is globally unique with Tracy.
         """
-        self.unique_id = "%s-%s" % (self.electiondate, self.candidateid)
+        self.unique_id = f"{self.electiondate}-{self.candidateid}"
 
     def set_id_field(self):
         """
@@ -280,24 +279,24 @@ class CandidateReportingUnit(APElection):
     def __init__(self, **kwargs):
         self.id = None
         self.unique_id = None
-        self.electiondate = kwargs.get('electiondate', None)
-        self.first = kwargs.get('first', None)
-        self.last = kwargs.get('last', None)
-        self.party = kwargs.get('party', None)
+        self.electiondate = kwargs.get('electiondate')
+        self.first = kwargs.get('first')
+        self.last = kwargs.get('last')
+        self.party = kwargs.get('party')
 
-        self.candidateid = kwargs.get('candidateID', None)
+        self.candidateid = kwargs.get('candidateID')
         if kwargs.get('candidateid', None):
             self.candidateid = kwargs['candidateid']
 
-        self.polid = kwargs.get('polID', None)
+        self.polid = kwargs.get('polID')
         if kwargs.get('polid', None):
             self.polid = kwargs['polid']
 
-        self.ballotorder = kwargs.get('ballotOrder', None)
+        self.ballotorder = kwargs.get('ballotOrder')
         if kwargs.get('ballotorder', None):
             self.ballotorder = kwargs['ballotorder']
 
-        self.polnum = kwargs.get('polNum', None)
+        self.polnum = kwargs.get('polNum')
         if kwargs.get('polnum', None):
             self.polnum = kwargs['polnum']
 
@@ -315,28 +314,28 @@ class CandidateReportingUnit(APElection):
 
         self.winner = kwargs.get('winner', False) == 'X'
         self.runoff = kwargs.get('winner', False) == 'R'
-        self.is_ballot_measure = kwargs.get('is_ballot_measure', None)
-        self.level = kwargs.get('level', None)
-        self.reportingunitname = kwargs.get('reportingunitname', None)
-        self.reportingunitid = kwargs.get('reportingunitid', None)
-        self.fipscode = kwargs.get('fipscode', None)
-        self.lastupdated = kwargs.get('lastupdated', None)
+        self.is_ballot_measure = kwargs.get('is_ballot_measure')
+        self.level = kwargs.get('level')
+        self.reportingunitname = kwargs.get('reportingunitname')
+        self.reportingunitid = kwargs.get('reportingunitid')
+        self.fipscode = kwargs.get('fipscode')
+        self.lastupdated = kwargs.get('lastupdated')
         self.precinctsreporting = kwargs.get('precinctsreporting', 0)
         self.precinctstotal = kwargs.get('precinctstotal', 0)
         self.precinctsreportingpct = kwargs.get('precinctsreportingpct', 0.0)
         self.uncontested = kwargs.get('uncontested', False)
         self.test = kwargs.get('test', False)
-        self.raceid = kwargs.get('raceid', None)
-        self.statepostal = kwargs.get('statepostal', None)
-        self.statename = kwargs.get('statename', None)
-        self.racetype = kwargs.get('racetype', None)
-        self.racetypeid = kwargs.get('racetypeid', None)
-        self.officeid = kwargs.get('officeid', None)
-        self.officename = kwargs.get('officename', None)
-        self.seatname = kwargs.get('seatname', None)
-        self.description = kwargs.get('description', None)
-        self.seatnum = kwargs.get('seatnum', None)
-        self.initialization_data = kwargs.get('initialization_data', None)
+        self.raceid = kwargs.get('raceid')
+        self.statepostal = kwargs.get('statepostal')
+        self.statename = kwargs.get('statename')
+        self.racetype = kwargs.get('racetype')
+        self.racetypeid = kwargs.get('racetypeid')
+        self.officeid = kwargs.get('officeid')
+        self.officename = kwargs.get('officename')
+        self.seatname = kwargs.get('seatname')
+        self.description = kwargs.get('description')
+        self.seatnum = kwargs.get('seatnum')
+        self.initialization_data = kwargs.get('initialization_data')
         self.national = kwargs.get('national', False)
         self.incumbent = kwargs.get('incumbent', False)
         self.electtotal = kwargs.get('electtotal', 0)
@@ -350,11 +349,7 @@ class CandidateReportingUnit(APElection):
         """
         Set id to `<raceid>-<uniqueid>-<reportingunitid>`.
         """
-        self.id = "%s-%s-%s" % (
-            self.raceid,
-            self.unique_id,
-            self.reportingunitid
-        )
+        self.id = f"{self.raceid}-{self.unique_id}-{self.reportingunitid}"
 
     def set_unique_id(self):
         """
@@ -368,13 +363,13 @@ class CandidateReportingUnit(APElection):
         we're using and then the ID itself.
         Verified this is globally unique with Tracy Lewis.
         """
-        if not self.is_ballot_measure:
-            if self.polid:
-                self.unique_id = 'polid-{0}'.format(self.polid)
-            else:
-                self.unique_id = 'polnum-{0}'.format(self.polnum)
-        else:
+        if self.is_ballot_measure:
             self.unique_id = self.candidateid
+
+        elif self.polid:
+            self.unique_id = 'polid-{0}'.format(self.polid)
+        else:
+            self.unique_id = 'polnum-{0}'.format(self.polnum)
 
     def serialize(self):
         """
@@ -425,12 +420,12 @@ class CandidateReportingUnit(APElection):
 
     def __unicode__(self):
         if self.is_ballot_measure:
-            payload = "%s" % self.party
+            payload = f"{self.party}"
         else:
-            payload = "%s %s (%s)" % (self.first, self.last, self.party)
+            payload = f"{self.first} {self.last} ({self.party})"
         if self.winner:
             payload += ' (w)'
-        return "{}".format(payload)
+        return f"{payload}"
 
 
 class ReportingUnit(APElection):
@@ -439,31 +434,31 @@ class ReportingUnit(APElection):
     level of reporting.
     """
     def __init__(self, **kwargs):
-        self.electiondate = kwargs.get('electiondate', None)
+        self.electiondate = kwargs.get('electiondate')
 
-        self.statepostal = kwargs.get('statePostal', None)
+        self.statepostal = kwargs.get('statePostal')
         if kwargs.get('statepostal', None):
             self.statepostal = kwargs['statepostal']
 
-        self.statename = kwargs.get('stateName', None)
+        self.statename = kwargs.get('stateName')
         if kwargs.get('statename', None):
             self.statename = kwargs['statename']
 
-        self.level = kwargs.get('level', None)
+        self.level = kwargs.get('level')
 
-        self.reportingunitname = kwargs.get('reportingunitName', None)
+        self.reportingunitname = kwargs.get('reportingunitName')
         if kwargs.get('reportingunitname', None):
             self.reportingunitname = kwargs['reportingunitname']
 
-        self.reportingunitid = kwargs.get('reportingunitID', None)
+        self.reportingunitid = kwargs.get('reportingunitID')
         if kwargs.get('reportingunitid', None):
             self.reportingunitid = kwargs['reportingunitid']
 
-        self.fipscode = kwargs.get('fipsCode', None)
+        self.fipscode = kwargs.get('fipsCode')
         if kwargs.get('fipscode', None):
             self.fipscode = kwargs['fipscode']
 
-        self.lastupdated = kwargs.get('lastUpdated', None)
+        self.lastupdated = kwargs.get('lastUpdated')
         if kwargs.get('lastupdated', None):
             self.lastupdated = kwargs['lastupdated']
 
@@ -476,21 +471,21 @@ class ReportingUnit(APElection):
             self.precinctstotal = kwargs['precinctstotal']
 
         self.precinctsreportingpct = kwargs.get('precinctsReportingPct', 0.0)\
-            * 0.01
+                * 0.01
 
         if kwargs.get('precinctsreportingpct', None):
             self.precinctsreportingpct = kwargs['precinctsreportingpct']
 
         self.uncontested = kwargs.get('uncontested', False)
         self.test = kwargs.get('test', False)
-        self.raceid = kwargs.get('raceid', None)
-        self.racetype = kwargs.get('racetype', None)
-        self.racetypeid = kwargs.get('racetypeid', None)
-        self.officeid = kwargs.get('officeid', None)
-        self.officename = kwargs.get('officename', None)
-        self.seatname = kwargs.get('seatname', None)
-        self.description = kwargs.get('description', None)
-        self.seatnum = kwargs.get('seatnum', None)
+        self.raceid = kwargs.get('raceid')
+        self.racetype = kwargs.get('racetype')
+        self.racetypeid = kwargs.get('racetypeid')
+        self.officeid = kwargs.get('officeid')
+        self.officename = kwargs.get('officename')
+        self.seatname = kwargs.get('seatname')
+        self.description = kwargs.get('description')
+        self.seatnum = kwargs.get('seatnum')
         self.initialization_data = kwargs.get('initialization_data', False)
         self.national = kwargs.get('national', False)
         self.candidates = kwargs.get('candidates', [])
@@ -530,9 +525,11 @@ class ReportingUnit(APElection):
         So, change the level from 'subunit' to the
         actual level name, either 'state' or 'township'.
         """
-        if self.statepostal in maps.FIPS_TO_STATE.keys():
-            if self.level == 'subunit':
-                self.level = 'township'
+        if (
+            self.statepostal in maps.FIPS_TO_STATE.keys()
+            and self.level == 'subunit'
+        ):
+            self.level = 'township'
         if self.level == 'subunit':
             self.level = 'county'
 
@@ -548,7 +545,7 @@ class ReportingUnit(APElection):
         """
         if not self.uncontested:
             for c in self.candidates:
-                self.votecount = sum([c.votecount for c in self.candidates])
+                self.votecount = sum(c.votecount for c in self.candidates)
         else:
             self.votecount = None
 
@@ -607,21 +604,21 @@ class Race(APElection):
     within a certain election.
     """
     def __init__(self, **kwargs):
-        self.electiondate = kwargs.get('electiondate', None)
-        self.statepostal = kwargs.get('statePostal', None)
-        self.statename = kwargs.get('stateName', None)
+        self.electiondate = kwargs.get('electiondate')
+        self.statepostal = kwargs.get('statePostal')
+        self.statename = kwargs.get('stateName')
         self.test = kwargs.get('test', False)
-        self.raceid = kwargs.get('raceID', None)
-        self.racetype = kwargs.get('raceType', None)
-        self.racetypeid = kwargs.get('raceTypeID', None)
-        self.officeid = kwargs.get('officeID', None)
-        self.officename = kwargs.get('officeName', None)
-        self.party = kwargs.get('party', None)
-        self.seatname = kwargs.get('seatName', None)
-        self.description = kwargs.get('description', None)
-        self.seatnum = kwargs.get('seatNum', None)
+        self.raceid = kwargs.get('raceID')
+        self.racetype = kwargs.get('raceType')
+        self.racetypeid = kwargs.get('raceTypeID')
+        self.officeid = kwargs.get('officeID')
+        self.officename = kwargs.get('officeName')
+        self.party = kwargs.get('party')
+        self.seatname = kwargs.get('seatName')
+        self.description = kwargs.get('description')
+        self.seatnum = kwargs.get('seatNum')
         self.uncontested = kwargs.get('uncontested', False)
-        self.lastupdated = kwargs.get('lastUpdated', None)
+        self.lastupdated = kwargs.get('lastUpdated')
         self.initialization_data = kwargs.get('initialization_data', False)
         self.national = kwargs.get('national', False)
         self.candidates = kwargs.get('candidates', [])
@@ -787,8 +784,8 @@ class Race(APElection):
 
     def __unicode__(self):
         if self.racetype:
-            return "%s %s" % (self.racetype, self.officename)
-        return "%s" % self.officename
+            return f"{self.racetype} {self.officename}"
+        return f"{self.officename}"
 
 
 class Elections():
@@ -831,23 +828,26 @@ class Elections():
             If electiondate is specified, gets the next election
             after the specified date.
         """
-        if not electiondate:
-            today = datetime.datetime.now()
-        else:
-            today = dateutil_parser.parse(electiondate)
+        today = (
+            dateutil_parser.parse(electiondate)
+            if electiondate
+            else datetime.datetime.now()
+        )
 
         next_election = None
         lowest_diff = None
         for e in self.get_elections(datafile=datafile):
             diff = (dateutil_parser.parse(e.electiondate) - today).days
-            if diff > 0:
-                if not lowest_diff and not next_election:
-                    next_election = e
-                    lowest_diff = diff
-                elif lowest_diff and next_election:
-                    if diff < lowest_diff:
-                        next_election = e
-                        lowest_diff = diff
+            if diff > 0 and (
+                (lowest_diff or next_election)
+                and lowest_diff
+                and next_election
+                and diff < lowest_diff
+                or not lowest_diff
+                and not next_election
+            ):
+                next_election = e
+                lowest_diff = diff
         return next_election
 
 
@@ -867,25 +867,25 @@ class Election(APElection):
 
         self.testresults = kwargs.get('testresults', False)
         self.liveresults = kwargs.get('liveresults', False)
-        self.electiondate = kwargs.get('electiondate', None)
-        self.national = kwargs.get('national', None)
-        self.api_key = kwargs.get('api_key', None)
+        self.electiondate = kwargs.get('electiondate')
+        self.national = kwargs.get('national')
+        self.api_key = kwargs.get('api_key')
 
-        self.parsed_json = kwargs.get('parsed_json', None)
-        self.next_request = kwargs.get('next_request', None)
-        self.datafile = kwargs.get('datafile', None)
+        self.parsed_json = kwargs.get('parsed_json')
+        self.next_request = kwargs.get('next_request')
+        self.datafile = kwargs.get('datafile')
         self.resultslevel = kwargs.get('resultslevel', 'ru')
         self.setzerocounts = kwargs.get('setzerocounts', False)
 
         self.raceids = kwargs.get('raceids', [])
-        self.officeids = kwargs.get('officeids', None)
+        self.officeids = kwargs.get('officeids')
 
         self.set_id_field()
 
         self._response = None
 
     def __unicode__(self):
-        return "{}".format(self.electiondate)
+        return f"{self.electiondate}"
 
     def set_id_field(self):
         """
@@ -930,20 +930,19 @@ class Election(APElection):
                         description=c.description,
                         electiondate=self.electiondate
                     )
-            else:
-                if not unique_candidates.get(c.candidateid, None):
-                    unique_candidates[c.candidateid] = Candidate(
-                        first=c.first,
-                        last=c.last,
-                        candidateid=c.candidateid,
-                        polid=c.polid,
-                        ballotorder=c.ballotorder,
-                        polnum=c.polnum,
-                        party=c.party
-                    )
+            elif not unique_candidates.get(c.candidateid, None):
+                unique_candidates[c.candidateid] = Candidate(
+                    first=c.first,
+                    last=c.last,
+                    candidateid=c.candidateid,
+                    polid=c.polid,
+                    ballotorder=c.ballotorder,
+                    polnum=c.polnum,
+                    party=c.party
+                )
 
-        candidates = [v for v in unique_candidates.values()]
-        ballot_measures = [v for v in unique_ballot_measures.values()]
+        candidates = list(unique_candidates.values())
+        ballot_measures = list(unique_ballot_measures.values())
         return candidates, ballot_measures
 
     def get_raw_races(self, **params):
@@ -975,23 +974,18 @@ class Election(APElection):
         :param parsed_json:
             Dict of parsed AP election JSON.
         """
-        if len(parsed_json['races']) > 0:
-            if parsed_json['races'][0].get('candidates', None):
-                payload = []
-                for r in parsed_json['races']:
-                    if len(self.raceids) > 0 and r['raceID'] in self.raceids:
-                        r['initialization_data'] = True
-                        payload.append(Race(**r))
-                    else:
-                        r['initialization_data'] = True
-                        payload.append(Race(**r))
-                return payload
-            if len(self.raceids) > 0:
-                return [Race(**r) for r in parsed_json['races'] if r['raceID'] in self.raceids]
-            else:
-                return [Race(**r) for r in parsed_json['races']]
-        else:
+        if len(parsed_json['races']) <= 0:
             return []
+        if parsed_json['races'][0].get('candidates', None):
+            payload = []
+            for r in parsed_json['races']:
+                r['initialization_data'] = True
+                payload.append(Race(**r))
+            return payload
+        if len(self.raceids) > 0:
+            return [Race(**r) for r in parsed_json['races'] if r['raceID'] in self.raceids]
+        else:
+            return [Race(**r) for r in parsed_json['races']]
 
     def get_units(self, race_objs):
         """
@@ -1017,18 +1011,15 @@ class Election(APElection):
                         candidate_reporting_units.append(candidate)
                     del unit.candidates
                     reporting_units.append(unit)
-                del race.candidates
-                del race.reportingunits
-                races.append(race)
             else:
                 for candidate in race.candidates:
                     if candidate.is_ballot_measure:
                         race.is_ballot_measure = True
                     candidate.electiondate = self.electiondate
                     candidate_reporting_units.append(candidate)
-                del race.candidates
-                del race.reportingunits
-                races.append(race)
+            del race.reportingunits
+            del race.candidates
+            races.append(race)
         return races, reporting_units, candidate_reporting_units
 
     def serialize(self):

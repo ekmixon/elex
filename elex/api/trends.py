@@ -15,18 +15,18 @@ class TrendParty(utils.UnicodeMixin):
     The status of a political party recorded in a trend report.
     """
     def __init__(self, **kwargs):
-        self.party = kwargs.get("party", None)
-        self.office = kwargs.get("office", None)
+        self.party = kwargs.get("party")
+        self.office = kwargs.get("office")
 
-        self.won = kwargs.get("won", None)
-        self.leading = kwargs.get("leading", None)
-        self.holdovers = kwargs.get("holdovers", None)
-        self.winning_trend = kwargs.get("winning_trend", None)
-        self.current = kwargs.get("current", None)
-        self.insufficient_vote = kwargs.get("insufficient_vote", None)
+        self.won = kwargs.get("won")
+        self.leading = kwargs.get("leading")
+        self.holdovers = kwargs.get("holdovers")
+        self.winning_trend = kwargs.get("winning_trend")
+        self.current = kwargs.get("current")
+        self.insufficient_vote = kwargs.get("insufficient_vote")
 
-        self.net_winners = kwargs.get("net_winners", None)
-        self.net_leaders = kwargs.get("net_leaders", None)
+        self.net_winners = kwargs.get("net_winners")
+        self.net_leaders = kwargs.get("net_leaders")
 
     def serialize(self):
         """
@@ -46,7 +46,7 @@ class TrendParty(utils.UnicodeMixin):
         ))
 
     def __unicode__(self):
-        return "%s - %s" % (self.office, self.party)
+        return f"{self.office} - {self.party}"
 
 
 class BaseTrendReport(utils.UnicodeMixin):
@@ -94,8 +94,7 @@ class BaseTrendReport(utils.UnicodeMixin):
         using requests. Formats that request with env vars.
         """
         reports = utils.get_reports(params=params)
-        report_id = self.get_report_id(reports, key)
-        if report_id:
+        if report_id := self.get_report_id(reports, key):
             r = utils.api_request('/reports/{0}'.format(report_id))
             return r.json()['trendtable']
 
@@ -104,14 +103,18 @@ class BaseTrendReport(utils.UnicodeMixin):
         Takes a delSuper or delSum as the argument and returns
         organization-specific report ID.
         """
-        for report in reports:
-            if (
-                key == self.office_code and
-                report.get('title') in [self.api_report_id, self.api_test_report_id]
-            ):
-                id = report.get('id').rsplit('/', 1)[-1]
-                return id
-        return None
+        return next(
+            (
+                report.get('id').rsplit('/', 1)[-1]
+                for report in reports
+                if (
+                    key == self.office_code
+                    and report.get('title')
+                    in [self.api_report_id, self.api_test_report_id]
+                )
+            ),
+            None,
+        )
 
     def output_parties(self):
         """

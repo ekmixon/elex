@@ -480,10 +480,7 @@ relative to that date, otherwise will use today's date)")
         This will find the first election after April 15, 2016.
         """
         self.app.log.info('Getting next election')
-        if len(self.app.pargs.date):
-            electiondate = self.app.pargs.date[0]
-        else:
-            electiondate = None
+        electiondate = self.app.pargs.date[0] if len(self.app.pargs.date) else None
         election = Elections().get_next_election(
             datafile=self.app.pargs.data_file,
             electiondate=electiondate

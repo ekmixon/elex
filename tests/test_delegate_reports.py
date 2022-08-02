@@ -30,9 +30,7 @@ class TestDelegateReports(tests.DelegateReportTestCase):
         )
 
     def test_number_of_national_level_results(self):
-        number_of_candidates = list(
-            set([d.last for d in self.delegate_reports])
-        )
+        number_of_candidates = list({d.last for d in self.delegate_reports})
         national_delegate_reports = [
             d for d in self.delegate_reports if d.level == 'nation'
         ]
@@ -43,17 +41,20 @@ class TestDelegateReports(tests.DelegateReportTestCase):
 
     def test_number_of_state_level_results(self):
         number_of_states = list(
-            set([d.state for d in self.delegate_reports if d.level == 'state'])
+            {d.state for d in self.delegate_reports if d.level == 'state'}
         )
+
         self.assertEqual(58, len(number_of_states))
 
     def test_state_us_to_national_transformation(self):
-        number_of_national_results = list(
-            [d.level for d in self.delegate_reports if d.level == 'nation']
-        )
-        number_of_state_us_results = list(
-            [d.level for d in self.delegate_reports if d.state == 'US']
-        )
+        number_of_national_results = [
+            d.level for d in self.delegate_reports if d.level == 'nation'
+        ]
+
+        number_of_state_us_results = [
+            d.level for d in self.delegate_reports if d.state == 'US'
+        ]
+
         self.assertEqual(
             len(number_of_national_results),
             len(number_of_state_us_results)
