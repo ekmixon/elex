@@ -18,15 +18,12 @@ class TestConnecticutRollups(tests.ElectionResultsTestCase):
         self.assertNotEqual(len(self.candidate_reporting_units), 0)
 
     def test_ct_has_all_counties(self):
-        ct_counties = set()
         raw_counties = [
             r for r in self.reporting_units if
             r.statepostal == "CT" and
             r.level == "county"
         ]
-        for c in raw_counties:
-            ct_counties.add(c.reportingunitname)
-
+        ct_counties = {c.reportingunitname for c in raw_counties}
         ct_mapped_counties = set(maps.FIPS_TO_STATE['CT'].keys())
 
         self.assertEqual(len(ct_counties), len(ct_mapped_counties))
@@ -39,12 +36,14 @@ class TestConnecticutRollups(tests.ElectionResultsTestCase):
         ]
 
         for county in ct_counties:
-            races = set([
-                r.raceid for r in self.reporting_units if
-                r.statepostal == "CT" and
-                r.level == "township" and
-                r.fipscode == county.fipscode
-            ])
+            races = {
+                r.raceid
+                for r in self.reporting_units
+                if r.statepostal == "CT"
+                and r.level == "township"
+                and r.fipscode == county.fipscode
+            }
+
             for race in races:
                 townships = [
                     r.precinctstotal for r in self.reporting_units if

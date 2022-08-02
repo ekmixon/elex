@@ -11,9 +11,7 @@ run the quota test.'
 class APQuotaTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.responses = []
-        for i in range(AP_API_LIMIT):
-            self.responses.append(utils.api_request('/'))
+        self.responses = [utils.api_request('/') for _ in range(AP_API_LIMIT)]
 
     @unittest.skipUnless(os.environ.get('AP_API_KEY', None), API_MESSAGE)
     @unittest.skipUnless(
@@ -29,9 +27,8 @@ class APQuotaTestCase(unittest.TestCase):
         QUOTA_MESSAGE
     )
     def test_only_one_quota_failures(self):
-        num_quota_failures = 0
-        for response in self.responses:
-            if response.status_code == 403:
-                num_quota_failures += 1
+        num_quota_failures = sum(
+            response.status_code == 403 for response in self.responses
+        )
 
         self.assertEqual(num_quota_failures, 1)

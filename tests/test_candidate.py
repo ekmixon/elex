@@ -89,6 +89,6 @@ class TestCandidate(tests.ElectionResultsTestCase):
         )
 
     def test_unique_ids(self):
-        all_ids = list([b.id for b in self.candidates])
+        all_ids = [b.id for b in self.candidates]
         unique_ids = set(all_ids)
         self.assertEqual(len(all_ids), len(unique_ids))

@@ -31,8 +31,11 @@ def add_election_hook(app):
         app.election.raceids = [x.strip() for x in app.pargs.raceids.split(',')]
 
     if app.pargs.officeids:
-        invalid_officeids = [x for x in app.pargs.officeids.split(',') if x not in maps.OFFICE_NAMES]
-        if invalid_officeids:
+        if invalid_officeids := [
+            x
+            for x in app.pargs.officeids.split(',')
+            if x not in maps.OFFICE_NAMES
+        ]:
             text = '{0} is/are invalid officeID(s). Here is a list of valid officeIDs: {1}'
             app.log.error(text.format(", ".join(invalid_officeids), ", ".join(maps.OFFICE_NAMES.keys())))
             app.close(1)

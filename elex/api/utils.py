@@ -25,7 +25,7 @@ class UnicodeMixin(object):
         __str__ = lambda x: six.text_type(x).encode('utf-8')
 
     def __repr__(self):
-        return '<{}: {}>'.format(self.__class__.__name__, self.__str__())
+        return f'<{self.__class__.__name__}: {self.__str__()}>'
 
 
 def write_recording(payload):
@@ -40,8 +40,7 @@ def write_recording(payload):
     :param payload:
         JSON payload from Associated Press Elections API.
     """
-    recorder = os.environ.get('ELEX_RECORDING', False)
-    if recorder:
+    if recorder := os.environ.get('ELEX_RECORDING', False):
         timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
         if recorder == u"mongodb":
             MONGODB_CLIENT = MongoClient(
@@ -60,10 +59,8 @@ def write_recording(payload):
             collection.insert({"time": timestamp, "data": payload})
         elif recorder == u"flat":
             recorder_directory = os.environ.get('ELEX_RECORDING_DIR', '/tmp')
-            json_path = '%s/ap_elections_loader_recording-%s.json' % (
-                recorder_directory,
-                timestamp
-            )
+            json_path = f'{recorder_directory}/ap_elections_loader_recording-{timestamp}.json'
+
             with open(json_path, 'w') as writefile:
                 writefile.write(json.dumps(payload))
 
@@ -105,7 +102,4 @@ def get_reports(params={}):
     Get data from `reports` endpoints.
     """
     resp = api_request('/reports', **params)
-    if resp.ok:
-        return resp.json().get('reports')
-    else:
-        return []
+    return resp.json().get('reports') if resp.ok else []

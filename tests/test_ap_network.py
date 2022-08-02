@@ -54,7 +54,12 @@ class TestRaceResultsOfficeIdParsing(NetworkTestCase):
         data_all = all_races.json()
         self.assertLess(len(data_w_officeids['races']), len(data_all['races']))
 
-        raceids_filter_ph_in_all = [elem['raceID'] for elem in data_all['races'] if elem['officeID'] == 'P' or elem['officeID'] == 'H']
+        raceids_filter_ph_in_all = [
+            elem['raceID']
+            for elem in data_all['races']
+            if elem['officeID'] in ['P', 'H']
+        ]
+
         raceids_w_officeids = [elem['raceID'] for elem in data_w_officeids['races']]
         self.assertEqual(raceids_filter_ph_in_all, raceids_w_officeids)
 
@@ -65,10 +70,16 @@ class TestRaceResultsOfficeIdParsing(NetworkTestCase):
         data_raceid = raceid_req.json()
         data_officeid = officeid_req.json()
 
-        len_data_raceid_zero = sum([1 for elem in data_raceid['races'] if elem['raceID'] == '0'])
+        len_data_raceid_zero = sum(
+            elem['raceID'] == '0' for elem in data_raceid['races']
+        )
+
         self.assertEqual(len(data_officeid['races']), len_data_raceid_zero)
 
-        len_data_officeid_zero = sum([1 for elem in data_officeid['races'] if elem['raceID'] == '0'])
+        len_data_officeid_zero = sum(
+            elem['raceID'] == '0' for elem in data_officeid['races']
+        )
+
         self.assertEqual(len_data_officeid_zero, len_data_raceid_zero)
 
 

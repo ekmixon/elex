@@ -239,9 +239,7 @@ class ElexCLICSVTestCase(
 
     def test_csv_delegate_state_count(self):
         fields, data = self._test_command(command='delegates')
-        number_of_states = list(
-            set([d['state'] for d in data if d['level'] == 'state'])
-        )
+        number_of_states = list({d['state'] for d in data if d['level'] == 'state'})
         self.assertEqual(58, len(number_of_states))
 
     def test_csv_results_resultslevel(self):
@@ -274,16 +272,16 @@ class ElexCLICSVTestCase(
         if electiondate is not None:
             argv.append(electiondate)
 
-        argv = argv + ['--data-file', datafile]
-        argv = argv + ['--delegate-sum-file', delsum_datafile]
-        argv = argv + ['--delegate-super-file', delsuper_datafile]
-        argv = argv + ['--results-level', resultslevel]
+        argv += ['--data-file', datafile]
+        argv += ['--delegate-sum-file', delsum_datafile]
+        argv += ['--delegate-super-file', delsuper_datafile]
+        argv += ['--results-level', resultslevel]
 
         if with_timestamp:
-            argv = argv + ['--with-timestamp']
+            argv += ['--with-timestamp']
 
         if batch_name:
-            argv = argv + ['--batch-name', batch_name]
+            argv += ['--batch-name', batch_name]
 
         app = ElexApp(argv=argv)
 
@@ -511,9 +509,7 @@ class ElexCLIJSONTestCase(
 
     def test_json_delegate_state_count(self):
         fields, data = self._test_command(command='delegates')
-        number_of_states = list(
-            set([d['state'] for d in data if d['level'] == 'state'])
-        )
+        number_of_states = list({d['state'] for d in data if d['level'] == 'state'})
         self.assertEqual(58, len(number_of_states))
 
     def test_json_results_resultslevel(self):
@@ -541,20 +537,18 @@ class ElexCLIJSONTestCase(
         stdout_backup = sys.stdout
         sys.stdout = StringIO()
 
-        argv = [command]
+        argv = [command, electiondate]
 
-        argv.append(electiondate)
-
-        argv = argv + ['--data-file', datafile, '-o', 'json']
-        argv = argv + ['--delegate-sum-file', delsum_datafile]
-        argv = argv + ['--delegate-super-file', delsuper_datafile]
-        argv = argv + ['--results-level', resultslevel]
+        argv += ['--data-file', datafile, '-o', 'json']
+        argv += ['--delegate-sum-file', delsum_datafile]
+        argv += ['--delegate-super-file', delsuper_datafile]
+        argv += ['--results-level', resultslevel]
 
         if with_timestamp:
-            argv = argv + ['--with-timestamp']
+            argv += ['--with-timestamp']
 
         if batch_name:
-            argv = argv + ['--batch-name', batch_name]
+            argv += ['--batch-name', batch_name]
 
         app = ElexApp(argv=argv)
 
